@@ -1,0 +1,45 @@
+.result-page {
+  text-align: center;
+  padding: 80px 20px;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+.result-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.result-page p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.result-page a {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.result-page.failure a {
+  background-color: #dc3545;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}

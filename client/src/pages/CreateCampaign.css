@@ -1,0 +1,96 @@
+.create-campaign-bg {
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .create-campaign-container {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .create-campaign-container h2 {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 25px;
+    color: #222;
+  }
+  
+  .campaign-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .campaign-form input[type="text"],
+  .campaign-form input[type="number"],
+  .campaign-form input[type="file"],
+  .campaign-form select,
+  .campaign-form textarea {
+    padding: 12px 14px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 100%;
+    background-color: #f9f9f9;
+    transition: border-color 0.2s ease;
+  }
+  
+  .campaign-form input:focus,
+  .campaign-form textarea:focus,
+  .campaign-form select:focus {
+    border-color: #4fcfa5;
+    outline: none;
+  }
+  
+  .campaign-form textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .campaign-form button {
+    padding: 14px;
+    background-color: #4fcfa5;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .campaign-form button:hover {
+    background-color: #3bbd90;
+  }
+  .image-upload-label {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #4fcfa5;
+    color: white;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .image-upload-label:hover {
+    background-color: #3bbd90;
+  }
+  
+  .file-name {
+    font-size: 0.9rem;
+    color: #444;
+    margin-top: 6px;
+  }
+  
