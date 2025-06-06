@@ -11,7 +11,7 @@ const CampaignSection = () => {
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
-        const res = await fetch('http://localhost:5001/campaigns');
+        const res = await fetch('http://localhost:5001/campaigns/with-donations');
         if (!res.ok) throw new Error('Failed to fetch campaigns');
         const data = await res.json();
         setCampaigns(data);
@@ -91,9 +91,7 @@ const CampaignSection = () => {
       ) : (
         <div className="campaign-list">
           {filteredCampaigns.map((c, index) => {
-            const percentage = c.goal
-              ? Math.min(Math.round((c.amount || 0) / c.goal * 100), 100)
-              : 0;
+            const percentage = c.progress || 0;
 
             return (
               <div className="campaign-card" key={index}>

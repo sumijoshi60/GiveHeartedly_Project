@@ -8,7 +8,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const stored = localStorage.getItem('user');
       const parsed = stored && stored !== 'undefined' ? JSON.parse(stored) : null;
-      return parsed?.email ? parsed : null;
+      return parsed?.email
+        ? { ...parsed, _id: parsed._id || parsed.id }
+        : null;
+
     } catch {
       return null;
     }

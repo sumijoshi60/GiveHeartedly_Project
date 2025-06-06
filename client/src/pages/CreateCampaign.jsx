@@ -44,6 +44,8 @@ const CreateCampaign = () => {
     formDataToSend.append('category', formData.category);
     formDataToSend.append('description', formData.description);
     formDataToSend.append('image', formData.image);
+    formDataToSend.append('userId', localStorage.getItem('userId')); // ✅ Add this
+
 
     console.log("📤 Sending campaign data with image to Cloudinary...");
 

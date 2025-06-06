@@ -1,28 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const Campaign = require('../models/Campaign');
+const Donation = require('../models/Donation');
 const { upload } = require('../utils/cloudinary');
 
-// 🌐 Update this to your ngrok public URL
-const NGROK_BASE_URL = 'https://7eae-113-199-231-162.ngrok-free.app';
-
-// POST /campaigns — handles Cloudinary image upload
+// ✅ POST /campaigns — Create a campaign with image + userId
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    console.log('📥 Incoming POST /campaigns');
-    console.log('🧾 req.body:', req.body);
-    console.log('🖼️ req.file:', req.file);
-
-    // Check for Cloudinary credentials
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      console.error('❌ Cloudinary credentials missing!');
-      return res.status(500).json({ message: 'Cloudinary credentials missing. Check your .env file.' });
-    }
-
-    const { title, goal, location, category, description } = req.body;
+    const { title, goal, location, category, description, userId } = req.body;
 
     if (!req.file) {
-      console.error('❌ No file received from frontend');
       return res.status(400).json({ message: 'Image upload failed. Please select a valid image.' });
     }
 
@@ -33,6 +20,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       category,
       description,
       imageUrl: req.file.path,
+      userId,
     });
 
     const saved = await newCampaign.save();
@@ -49,7 +37,7 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 });
 
-// GET /campaigns — fetch all campaigns
+// ✅ GET /campaigns — fetch all campaigns
 router.get('/', async (req, res) => {
   try {
     const campaigns = await Campaign.find().sort({ createdAt: -1 });
@@ -60,23 +48,61 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /donate/:id — eSewa test redirect
-router.get('/donate/:id', (req, res) => {
-  const { id } = req.params;
+// ✅ GET /campaigns/with-donations — Public enriched campaigns
+router.get('/with-donations', async (req, res) => {
+  try {
+    const campaigns = await Campaign.find();
+    const donations = await Donation.aggregate([
+      { $group: { _id: "$campaignTitle", totalDonated: { $sum: "$amount" } } }
+    ]);
 
-  const params = new URLSearchParams({
-    amt: '90',
-    psc: '2',
-    pdc: '3',
-    txAmt: '5',
-    tAmt: '100',
-    pid: id,
-    scd: 'EPAYTEST',
-    su: `${NGROK_BASE_URL}/success?pid=${id}`,
-    fu: `${NGROK_BASE_URL}/failure`
-  }).toString();
+    const enriched = campaigns.map(c => {
+      const match = donations.find(d => d._id === c.title);
+      const amount = match?.totalDonated || 0;
+      const progress = c.goal ? Math.min((amount / c.goal) * 100, 100) : 0;
 
-  res.redirect(`https://uat.esewa.com.np/epay/main?${params}`);
+      return {
+        ...c.toObject(),
+        amount,
+        progress: Math.round(progress)
+      };
+    });
+
+    res.json(enriched);
+  } catch (err) {
+    console.error("❌ Failed to fetch enriched campaigns:", err);
+    res.status(500).json({ message: "Failed to fetch campaigns with donations" });
+  }
+});
+
+// ✅ GET /campaigns/user/:userId — Personal campaigns with progress
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const campaigns = await Campaign.find({ userId });
+
+    const donations = await Donation.aggregate([
+      { $group: { _id: "$campaignTitle", totalDonated: { $sum: "$amount" } } }
+    ]);
+
+    const enriched = campaigns.map(c => {
+      const match = donations.find(d => d._id === c.title);
+      const amount = match?.totalDonated || 0;
+      const progress = c.goal ? Math.min((amount / c.goal) * 100, 100) : 0;
+
+      return {
+        ...c.toObject(),
+        amount,
+        progress: Math.round(progress)
+      };
+    });
+
+    res.json(enriched);
+  } catch (err) {
+    console.error("❌ Failed to fetch user campaigns:", err);
+    res.status(500).json({ message: "Failed to fetch campaigns by user" });
+  }
 });
 
 module.exports = router;

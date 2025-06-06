@@ -41,7 +41,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.use('/', donationRoutes);
+app.use('/api/donations', donationRoutes);
 
 
 // ✅ Connect to MongoDB

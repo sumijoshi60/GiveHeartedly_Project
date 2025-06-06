@@ -18,7 +18,7 @@ const Success = () => {
 
     const saveDonation = async () => {
       try {
-        const res = await fetch('http://localhost:5001/save-donation', {
+        const res = await fetch('http://localhost:5001/api/donations/save-donation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

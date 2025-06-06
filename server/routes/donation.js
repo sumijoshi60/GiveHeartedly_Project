@@ -60,4 +60,15 @@ router.get('/donations/all', async (req, res) => {
   }
 });
 
+// Get all donations by a specific user
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const donations = await Donation.find({ userId: req.params.userId }).sort({ date: -1 });
+    res.json(donations);
+  } catch (err) {
+    console.error('❌ Error fetching user donations:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
