@@ -1,11 +1,13 @@
+/*CampaignSection.css*/
 .create-campaign-bg {
-    background-size: cover;
+    background-size: contain;
     background-position: center;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
   }
   
   .create-campaign-container {
@@ -16,6 +18,7 @@
     width: 100%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     font-family: 'Segoe UI', sans-serif;
+    margin: 0 auto;
   }
   
   .create-campaign-container h2 {
@@ -93,4 +96,3 @@
     color: #444;
     margin-top: 6px;
   }
-  

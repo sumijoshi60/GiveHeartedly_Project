@@ -3,6 +3,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LogoutButton from '../components/LogoutButton'; // ✅ default import
+import { FaBell } from 'react-icons/fa';
+
 import './Hero.css';
 
 const Hero = () => {
@@ -19,12 +21,15 @@ const Hero = () => {
     <header className="hero" style={{ backgroundImage: "url('/hero-bg.jpg')" }}>
       <div className="hero-overlay" />
 
+
       <nav className="navbar">
         <img src="/logo.png" alt="GiveHeartedly logo" className="logo" />
+
         <ul className="nav-links">
           <li><a href="#donate-section">Donate</a></li>
           <li><Link to="/create">Fundraise</Link></li>
           <li><a href="#">Fundraising Guides</a></li>
+
           {loggedIn ? (
             <>
               <li><Link to="/profile">Profile</Link></li>
@@ -33,8 +38,16 @@ const Hero = () => {
           ) : (
             <li><Link to="/login" className="login-btn">Login</Link></li>
           )}
+           {loggedIn && (
+            <li className="notification-wrapper">
+              <FaBell className="notification-icon" />
+              <span className="notification-badge">3</span>
+            </li>
+          )}
+
         </ul>
       </nav>
+
 
       <div className="hero-content">
         <h1>Together, We Make Giving Powerful.</h1>

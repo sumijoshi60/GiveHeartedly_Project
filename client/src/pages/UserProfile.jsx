@@ -1,15 +1,29 @@
+// Updated UserProfile.jsx with Toast and Disabled Button (Delete removed)
+
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './UserProfile.css';
 import axios from 'axios';
-import { FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaMapMarkerAlt, FaListAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaMapMarkerAlt, FaListAlt, FaEdit, FaDownload, FaHistory } from 'react-icons/fa';
+import EditCampaignModal from '../components/EditCampaignModal.jsx';
+import WithdrawModal from '../components/WithdrawModal.jsx';
+import WithdrawalHistoryModal from '../components/WithdrawalHistoryModal.jsx';
 
 const UserProfile = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('donations');
   const [donationList, setDonationList] = useState([]);
-    const [currentCampaigns, setCurrentCampaigns] = useState([]);
+  const [currentCampaigns, setCurrentCampaigns] = useState([]);
   const [pastCampaigns, setPastCampaigns] = useState([]);
+  const [editingCampaign, setEditingCampaign] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [withdrawalHistoryModalOpen, setWithdrawalHistoryModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,14 +35,12 @@ const UserProfile = () => {
           const res = await axios.get(`http://localhost:5001/api/donations/user/${user._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          console.log("✅ Donations fetched:", res.data);
           setDonationList(res.data);
         } else {
-          const res = await axios.get(`http://localhost:5001/campaigns/user/${user._id}`);
-          console.log("✅ Campaigns fetched:", res.data);
-          const all = res.data;
-                    setCurrentCampaigns(all.filter(c => c.progress < 100));
-          setPastCampaigns(all.filter(c => c.progress >= 100));
+          const response = await axios.get(`http://localhost:5001/campaigns/user/${user._id}`);
+          const all = response.data;
+          setCurrentCampaigns(all.filter(c => !c.ended));
+          setPastCampaigns(all.filter(c => c.ended));
         }
       } catch (err) {
         console.error("❌ Fetch error:", err);
@@ -36,13 +48,63 @@ const UserProfile = () => {
     };
 
     fetchData();
-  }, [activeTab, user]);
+  }, [activeTab, user, editModalOpen, refreshTrigger]);
 
-  const totalDonated = donationList.reduce((sum, donation) => sum + donation.amount, 0);
-  const formattedTotal = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(totalDonated);
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await axios.put(`http://localhost:5001/campaigns/${editingCampaign._id}`, {
+        title: editingCampaign.title,
+        goal: editingCampaign.goal,
+        description: editingCampaign.description,
+      });
+      
+      setEditModalOpen(false);
+      setEditingCampaign(null);
+    } catch (err) {
+      console.error('❌ Update failed:', err);
+      toast.error("❌ Failed to update campaign");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleWithdraw = async (campaignId, campaignTitle, amount, formData) => {
+    if (amount <= 0) {
+      toast.warning("No funds available to withdraw");
+      return;
+    }
+
+    try {
+      const response = await axios.post(`http://localhost:5001/campaigns/${campaignId}/withdraw`, {
+        amount: amount,
+        paymentMethod: formData.paymentMethod,
+        accountName: formData.accountName,
+        accountNumber: formData.accountNumber,
+        purpose: formData.purpose,
+        email: formData.email,
+        userId: user._id
+      });
+      
+      toast.success(`Funds transferred successfully! $${amount} has been sent to your ${formData.paymentMethod} account.`);
+      setRefreshTrigger(prev => prev + 1); // Refresh the data
+    } catch (err) {
+      console.error('❌ Withdrawal failed:', err);
+      toast.error("❌ Failed to transfer funds. Please try again.");
+      throw err; // Re-throw to let the modal handle the error
+    }
+  };
+
+  const openWithdrawModal = (campaign) => {
+    setSelectedCampaign(campaign);
+    setWithdrawModalOpen(true);
+  };
+
+  const openWithdrawalHistoryModal = (campaign) => {
+    setSelectedCampaign(campaign);
+    setWithdrawalHistoryModalOpen(true);
+  };
 
   const renderCampaignCard = (c, isCompleted = false) => (
     <div key={c._id} className="donation-card">
@@ -53,11 +115,48 @@ const UserProfile = () => {
       <div className="donation-details">
         <p><FaListAlt size={14} style={{ marginRight: 6 }} /><strong>Category:</strong> {c.category}</p>
         <p><FaMapMarkerAlt size={14} style={{ marginRight: 6 }} /><strong>Location:</strong> {c.location}</p>
-        <p><FaCheckCircle size={14} style={{ marginRight: 6 }} /><strong>Progress:</strong> {c.progress}%</p>
+        {c.totalWithdrawn > 0 && (
+          <p><strong>Withdrawn:</strong> ${c.totalWithdrawn}</p>
+        )}
+        {c.endedAt && (
+          <p><strong>Ended On:</strong> {new Date(c.endedAt).toLocaleDateString()}</p>
+        )}
       </div>
-      <span className="campaign-status" style={isCompleted ? { backgroundColor: '#e8f5e9', color: '#2e7d32' } : {}}>
-        {isCompleted ? '✅ Goal Reached' : '🟢 In Progress'}
-      </span>
+      <div className="campaign-actions">
+        <span className="campaign-status" style={isCompleted ? { backgroundColor: '#e8f5e9', color: '#2e7d32' } : {}}>
+          {isCompleted 
+            ? (c.availableFunds > 0 ? '✅ Completed (Funds Available)' : '✅ Completed') 
+            : '🟢 In Progress'
+          }
+        </span>
+        {!isCompleted && (
+          <button
+            className="edit-btn"
+            onClick={() => {
+              setEditingCampaign(c);
+              setEditModalOpen(true);
+            }}
+          >
+            <FaEdit /> Edit
+          </button>
+        )}
+        {c.availableFunds > 0 && (
+          <button
+            className="withdraw-btn"
+            onClick={() => openWithdrawModal(c)}
+          >
+            <FaDownload /> Transfer Funds
+          </button>
+        )}
+        {(c.totalWithdrawn > 0 || c.availableFunds > 0) && (
+          <button
+            className="history-btn"
+            onClick={() => openWithdrawalHistoryModal(c)}
+          >
+            <FaHistory /> View History
+          </button>
+        )}
+      </div>
     </div>
   );
 
@@ -80,9 +179,7 @@ const UserProfile = () => {
                   }).format(donation.amount);
 
                   const formattedDate = new Date(donation.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
+                    year: 'numeric', month: 'long', day: 'numeric',
                   });
 
                   return (
@@ -103,7 +200,6 @@ const UserProfile = () => {
             </div>
           </>
         );
-
       case 'current':
         return (
           <>
@@ -111,12 +207,11 @@ const UserProfile = () => {
               <p className="placeholder-content">No active campaigns.</p>
             ) : (
               <div className="donation-list">
-                {currentCampaigns.map(c => renderCampaignCard(c))}
+                {currentCampaigns.map(c => renderCampaignCard(c, false))}
               </div>
             )}
           </>
         );
-
       case 'history':
         return (
           <>
@@ -129,11 +224,16 @@ const UserProfile = () => {
             )}
           </>
         );
-
       default:
         return null;
     }
   };
+
+  const totalDonated = donationList.reduce((sum, donation) => sum + donation.amount, 0);
+  const formattedTotal = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(totalDonated);
 
   return (
     <div className="profile-layout">
@@ -152,6 +252,7 @@ const UserProfile = () => {
       </aside>
 
       <main className="profile-main">
+        <ToastContainer position="bottom-right" autoClose={3000} />
         <section className="profile-summary">
           <div className="summary-box" onClick={() => setActiveTab('donations')}>
             <h3>Donations</h3>
@@ -171,6 +272,34 @@ const UserProfile = () => {
           {renderContent()}
         </section>
       </main>
+
+      {editModalOpen && editingCampaign && (
+        <EditCampaignModal
+          campaign={editingCampaign}
+          setCampaign={setEditingCampaign}
+          onClose={() => setEditModalOpen(false)}
+          onSubmit={handleUpdate}
+          submitting={submitting}
+          setRefreshTrigger={setRefreshTrigger}
+        />
+      )}
+
+      {withdrawModalOpen && selectedCampaign && (
+        <WithdrawModal
+          isOpen={withdrawModalOpen}
+          campaign={selectedCampaign}
+          onClose={() => setWithdrawModalOpen(false)}
+          onWithdraw={handleWithdraw}
+        />
+      )}
+
+      {withdrawalHistoryModalOpen && selectedCampaign && (
+        <WithdrawalHistoryModal
+          isOpen={withdrawalHistoryModalOpen}
+          campaign={selectedCampaign}
+          onClose={() => setWithdrawalHistoryModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,260 @@
+/* src/pages/CampaignDetails.css */
+
+body, .campaign-page-container {
+  background: #181818;
+  color: #fff;
+  min-height: 100vh;
+}
+
+.campaign-details-layout {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+}
+
+.fixed-logo-wrapper {
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  background: transparent;
+  z-index: 100;
+}
+
+.home-logo-link {
+  height: 56px;
+  width: 56px;
+}
+
+.home-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #232323;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.campaign-page-container {
+  margin-left: 90px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.campaign-detail-wrapper {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+  max-width: 1000px;
+  background: #232323;
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+  overflow: hidden;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.campaign-left {
+  flex: 2;
+  padding: 40px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.campaign-left h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+  color: #fff;
+}
+
+.campaign-image {
+  width: 100%;
+  max-height: 320px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+}
+
+.organizer {
+  font-size: 1.05rem;
+  color: #bdbdbd;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.donation-protected {
+  color: #4fcfa5;
+  font-size: 0.98rem;
+  margin-bottom: 18px;
+}
+
+.description {
+  color: #e0e0e0;
+  font-size: 1.08rem;
+  margin-top: 18px;
+  line-height: 1.7;
+}
+
+.campaign-right {
+  flex: 1.2;
+  background: #232323;
+  border-left: 1px solid #23272f;
+  padding: 40px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0 18px 18px 0;
+}
+
+.funds-info {
+  width: 100%;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.funds-info h2 {
+  font-size: 2rem;
+  color: #4fcfa5;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.funds-info p {
+  color: #bdbdbd;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.circular-progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 18px 0 10px 0;
+  position: relative;
+}
+
+.progress-ring {
+  width: 80px;
+  height: 80px;
+}
+
+.progress-ring-bg {
+  stroke: #535455;
+}
+
+.progress-ring-circle {
+  stroke: #4fcfa5;
+  transition: stroke-dashoffset 0.5s;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #4fcfa5;
+  margin: 0;
+  pointer-events: none;
+  text-align: center;
+}
+
+.donation-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #181818;
+  color: #fff;
+  font-size: 1.1rem;
+  margin-bottom: 18px;
+  margin-top: 10px;
+}
+
+.donation-input:focus {
+  outline: none;
+  border-color: #4fcfa5;
+}
+
+.donate-now-btn {
+  width: 100%;
+  padding: 16px;
+  background: #4fcfa5;
+  color: #181818;
+  font-weight: 700;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: background 0.2s, color 0.2s;
+  box-shadow: 0 2px 8px rgba(79,207,165,0.10);
+}
+
+.donate-now-btn:hover {
+  background: #38b2ac;
+  color: #fff;
+}
+
+@media (max-width: 900px) {
+  .campaign-detail-wrapper {
+    flex-direction: column;
+    gap: 0;
+  }
+  .campaign-left, .campaign-right {
+    padding: 28px 12px;
+    border-radius: 0;
+  }
+  .campaign-right {
+    border-left: none;
+    border-top: 1px solid #23272f;
+    border-radius: 0 0 18px 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .campaign-page-container {
+    padding: 18px 2px 40px 2px;
+  }
+  .campaign-detail-wrapper {
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  .campaign-left, .campaign-right {
+    padding: 14px 4px;
+  }
+  .home-logo {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 700px) {
+  .fixed-logo-wrapper {
+    position: static;
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    padding: 10px 0;
+    left: 0;
+    top: 0;
+  }
+  .campaign-page-container {
+    margin-left: 0;
+  }
+}

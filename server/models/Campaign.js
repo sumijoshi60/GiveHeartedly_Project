@@ -1,6 +1,9 @@
-//models/Campaign.js
-
 const mongoose = require('mongoose');
+
+// 🛠️ Clear the cached model in development to apply schema changes
+if (mongoose.models.Campaign) {
+  delete mongoose.models.Campaign;
+}
 
 const CampaignSchema = new mongoose.Schema({
   title: String,
@@ -14,11 +17,18 @@ const CampaignSchema = new mongoose.Schema({
     default: Date.now
   },
   userId: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User',
-  required: true
-  }
-
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  ended: {
+    type: Boolean,
+    default: false,
+  },
+  endedAt: {
+    type: Date,
+    default: null,
+  },
 });
 
 module.exports = mongoose.model('Campaign', CampaignSchema);

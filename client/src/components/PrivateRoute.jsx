@@ -1,11 +1,11 @@
+//client/src/components/PrivateRoute.jsx
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const PrivateRoute = ({ children }) => {
-  const { loggedIn, loading } = useAuth();
-
-  if (loading) return null; // Or show a spinner/loading screen
+  const { loggedIn } = useAuth(); // ✅ removed loading
 
   return loggedIn ? children : <Navigate to="/login" />;
 };

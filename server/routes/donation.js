@@ -3,6 +3,13 @@ const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Donation = require('../models/Donation');
+const { generateReceiptPDF } = require('../utils/pdfReceipt');
+const path = require('path');
+const fs = require('fs');
+const { sendThankYouEmail } = require('../utils/mailer');
+console.log("🧪 sendThankYouEmail type:", typeof sendThankYouEmail);
+
+
 
 // ✅ Save donation only once per session (atomic version)
 router.post('/save-donation', async (req, res) => {
@@ -41,24 +48,30 @@ router.post('/save-donation', async (req, res) => {
       return res.status(200).json({ message: 'Donation already exists' });
     }
 
-    console.log("✅ Donation saved for session:", session.id);
-    res.status(200).json({ message: 'Donation saved' });
+    // ✅ Send email with PDF
+    const donationData = {
+      email: session.customer_email || session.customer_details?.email || 'default@example.com',
+      campaignTitle: session.metadata.campaignTitle,
+      amount: session.amount_total / 100,
+      currency: session.currency,
+      date: new Date(),
+      sessionId: session.id,
+    };
+
+    const pdfPath = path.join(__dirname, '..', 'temp', `${session.id}.pdf`);
+    await generateReceiptPDF(donationData, pdfPath);
+    await sendThankYouEmail(donationData.email, donationData.campaignTitle, donationData.amount, pdfPath);
+    fs.unlink(pdfPath, () => {}); // optional cleanup
+
+    console.log("✅ Donation saved and email sent for session:", session.id);
+    res.status(200).json({ message: 'Donation saved and email sent' });
+
   } catch (err) {
     console.error('❌ Failed to save donation:', err.message);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// ✅ TEMP: See all donations (for dev/debug only)
-router.get('/donations/all', async (req, res) => {
-  try {
-    const donations = await Donation.find({});
-    res.json(donations);
-  } catch (err) {
-    console.error('❌ Error fetching donations:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // Get all donations by a specific user
 router.get('/user/:userId', async (req, res) => {

@@ -1,4 +1,8 @@
+//client/src/components/CampaignSection.jsx
+
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FaSearch, FaMapMarkerAlt, FaUser, FaCalendarAlt, FaHeart, FaArrowRight } from 'react-icons/fa';
 import './CampaignSection.css';
 
 const CampaignSection = () => {
@@ -6,7 +10,7 @@ const CampaignSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [donationAmounts, setDonationAmounts] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -27,105 +31,139 @@ const CampaignSection = () => {
   }, []);
 
   const filteredCampaigns = campaigns.filter((c) =>
-    c.title.toLowerCase().includes(searchTerm.toLowerCase())
+    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.location?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAmountChange = (id, value) => {
-    setDonationAmounts((prev) => ({ ...prev, [id]: value }));
+  const handleCardClick = (campaign) => {
+    navigate(`/campaign/${campaign._id}`);
   };
 
-  const handleDonate = async (campaign) => {
-    const userId = localStorage.getItem('userId');
-    const email = localStorage.getItem('email');
-    const amount = parseFloat(donationAmounts[campaign._id]) || 10;
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
 
-    if (!userId || !email) {
-      alert('Please log in before donating.');
-      return;
-    }
-
-    try {
-      const res = await fetch('http://localhost:5001/stripe/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: campaign.title,
-          amount: Math.round(amount * 100), // cents
-          userId,
-          email,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('❌ Unable to initiate Stripe payment.');
-      }
-    } catch (err) {
-      console.error('❌ Stripe error:', err);
-      alert('❌ Payment failed. Please try again.');
-    }
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Medical': '#ff6b6b',
+      'Education': '#4ecdc4',
+      'Disaster Relief': '#45b7d1',
+      'Animals': '#96ceb4',
+      'Other': '#feca57'
+    };
+    return colors[category] || '#4fcfa5';
   };
 
   return (
     <section id="donate-section" className="campaign-section">
-      <h2>Donate to a Cause</h2>
+      <div className="campaign-section-header">
+        <h2>Support Amazing Causes</h2>
+        <p>Discover and donate to campaigns that are making a difference in the world</p>
+      </div>
 
-      <div className="campaign-search">
-        <input
-          type="text"
-          placeholder="Search for a Campaign"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <button>🔍</button>
+      <div className="campaign-search-container">
+        <div className="campaign-search">
+          <div className="search-input-wrapper">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search campaigns, categories, or locations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+        
+        {searchTerm && (
+          <div className="search-results-info">
+            <span>{filteredCampaigns.length} campaign{filteredCampaigns.length !== 1 ? 's' : ''} found</span>
+          </div>
+        )}
       </div>
 
       {loading ? (
-        <p>Loading campaigns...</p>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading amazing campaigns...</p>
+        </div>
       ) : error ? (
-        <p className="error-message">{error}</p>
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+        </div>
       ) : filteredCampaigns.length === 0 ? (
-        <p>No matching campaigns found.</p>
+        <div className="no-campaigns-container">
+          <FaHeart className="no-campaigns-icon" />
+          <h3>No campaigns found</h3>
+          <p>{searchTerm ? 'Try adjusting your search terms' : 'Check back soon for new campaigns'}</p>
+        </div>
       ) : (
         <div className="campaign-list">
           {filteredCampaigns.map((c, index) => {
             const percentage = c.progress || 0;
-
+            const categoryColor = getCategoryColor(c.category);
+            
             return (
-              <div className="campaign-card" key={index}>
-                <h3>{c.title}</h3>
-                <img
-                  src={c.imageUrl || '/default-image.jpg'}
-                  alt={c.title}
-                  onError={(e) => (e.target.style.display = 'none')}
-                />
-                <div className="progress-bar">
-                  <div className="progress" style={{ width: `${percentage}%` }}></div>
+              <div className="campaign-card" key={index} onClick={() => handleCardClick(c)}>
+                <div className="campaign-image-container">
+                  <img
+                    src={c.imageUrl || '/default-image.jpg'}
+                    alt={c.title}
+                    onError={(e) => (e.target.src = '/default-image.jpg')}
+                  />
+                  <div className="campaign-overlay">
+                    <FaArrowRight className="view-icon" />
+                  </div>
+                  <div className="category-badge" style={{ backgroundColor: categoryColor }}>
+                    {c.category}
+                  </div>
                 </div>
-                <div className="amount-line">
-                  <span>${(c.amount || 0).toLocaleString()}</span>
-                  <span>{percentage}%</span>
+                
+                <div className="campaign-content">
+                  <h3 className="campaign-title">{c.title}</h3>
+                  
+                  <div className="campaign-meta">
+                    <div className="meta-item">
+                      <FaUser className="meta-icon" />
+                      <span>{c.organizerName || 'Anonymous'}</span>
+                    </div>
+                    <div className="meta-item">
+                      <FaMapMarkerAlt className="meta-icon" />
+                      <span>{c.location || 'Location not specified'}</span>
+                    </div>
+                    <div className="meta-item">
+                      <FaCalendarAlt className="meta-icon" />
+                      <span>{formatDate(c.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  <div className="campaign-progress">
+                    <div className="progress-info">
+                      <span className="raised-amount">${(c.amount || 0).toLocaleString()}</span>
+                      <span className="goal-amount">raised of ${(c.goal || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="progress-bar">
+                      <div 
+                        className="progress" 
+                        style={{ width: percentage === 0 ? '2px' : `${percentage}%`, backgroundColor: categoryColor, minWidth: '2px' }}
+                      ></div>
+                    </div>
+                    <div className="progress-percentage">
+                      <span>{percentage}%</span>
+                    </div>
+                  </div>
+
+                  <div className="campaign-actions">
+                    <button className="view-campaign-btn">
+                      View Campaign
+                      <FaArrowRight />
+                    </button>
+                  </div>
                 </div>
-                <p>{c.location}</p>
-                <p className="category">{c.category}</p>
-
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="Amount in $"
-                  value={donationAmounts[c._id] || ''}
-                  onChange={(e) => handleAmountChange(c._id, e.target.value)}
-                  className="donation-amount-input"
-                />
-
-                <button
-                  className="donate-button"
-                  onClick={() => handleDonate(c)}
-                >
-                  DONATE
-                </button>
               </div>
             );
           })}
@@ -135,4 +173,4 @@ const CampaignSection = () => {
   );
 };
 
-export default CampaignSection;
+export default CampaignSection;    

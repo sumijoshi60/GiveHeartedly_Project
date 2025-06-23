@@ -1,4 +1,3 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -11,18 +10,30 @@ import PrivateRoute from './components/PrivateRoute';
 import Success from './pages/Success';
 import Failure from './pages/Failure';
 import UserProfile from './pages/UserProfile';
+import CampaignDetails from './pages/CampaignDetails';
+
+// ✅ Logs AFTER imports
+console.log('✅ Hero:', Hero);
+console.log('✅ CampaignSection:', CampaignSection);
+console.log('✅ Login:', Login);
+console.log('✅ Signup:', Signup);
+console.log('✅ CreateCampaign:', CreateCampaign);
+console.log('✅ PrivateRoute:', PrivateRoute);
+console.log('✅ Success:', Success);
+console.log('✅ Failure:', Failure);
+console.log('✅ UserProfile:', UserProfile);
+console.log('✅ CampaignDetails:', CampaignDetails);
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/success" element={<Success />} />
         <Route path="/failure" element={<Failure />} />
+        <Route path="/campaign/:id" element={<CampaignDetails />} />
 
-        {/* Protected Routes */}
         <Route
           path="/"
           element={
@@ -50,8 +61,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>

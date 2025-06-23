@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './CreateCampaign.css';
+import './CreateCampaign.css'; // Make sure this matches exactly with your CSS filename
 
 const CreateCampaign = () => {
   const [formData, setFormData] = useState({
@@ -14,6 +14,16 @@ const CreateCampaign = () => {
   });
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'visible';
+      if (formData.imagePreview) {
+        URL.revokeObjectURL(formData.imagePreview);
+      }
+    };
+  }, [formData.imagePreview]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -44,10 +54,7 @@ const CreateCampaign = () => {
     formDataToSend.append('category', formData.category);
     formDataToSend.append('description', formData.description);
     formDataToSend.append('image', formData.image);
-    formDataToSend.append('userId', localStorage.getItem('userId')); // ✅ Add this
-
-
-    console.log("📤 Sending campaign data with image to Cloudinary...");
+    formDataToSend.append('userId', localStorage.getItem('userId'));
 
     try {
       const response = await fetch('http://localhost:5001/campaigns', {
@@ -57,43 +64,21 @@ const CreateCampaign = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ Failed to create campaign. Raw response:", errorText);
+        console.error("Failed to create campaign:", errorText);
         return;
       }
 
       const result = await response.json();
-      console.log("✅ Response from server:", result);
-
       alert('Campaign created!');
       navigate('/');
 
     } catch (err) {
-      console.error('🚨 Network or server error:', err);
+      console.error('Network error:', err);
     }
   };
 
-  // Clean up the object URL to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (formData.imagePreview) {
-        URL.revokeObjectURL(formData.imagePreview);
-      }
-    };
-  }, [formData.imagePreview]);
-
   return (
-    <div
-      className="create-campaign-bg"
-      style={{
-        backgroundImage: "url('/start-campaign-bg.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
+    <div className="create-campaign-bg">
       <div className="create-campaign-container">
         <h2>Start a Fundraising Campaign</h2>
         <form onSubmit={handleSubmit} className="campaign-form">
@@ -161,7 +146,7 @@ const CreateCampaign = () => {
             <img
               src={formData.imagePreview}
               alt="Preview"
-              style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '8px' }}
+              className="image-preview"
             />
           )}
 
