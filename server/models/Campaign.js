@@ -29,6 +29,8 @@ const CampaignSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  approved: { type: Boolean, default: false }, // Admin approval required
+  rejected: { type: Boolean, default: false }, // Admin disapproval
 });
 
 module.exports = mongoose.model('Campaign', CampaignSchema);

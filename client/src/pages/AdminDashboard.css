@@ -1,0 +1,170 @@
+/* AdminDashboard.css */
+
+/* Main container for the dashboard */
+.admin-dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: #232323;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* Dashboard title */
+.admin-dashboard-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+  text-align: center;
+}
+
+/* Welcome message */
+.admin-dashboard-welcome {
+  font-size: 1.1rem;
+  color: #bdbdbd;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+/* Stats cards container */
+.admin-dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 60px;
+}
+
+/* Individual stat card */
+.admin-dashboard-card {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.admin-dashboard-card h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #4fcfa5;
+  margin-bottom: 10px;
+}
+
+.admin-dashboard-card p {
+  font-size: 1.1rem;
+  color: #bdbdbd;
+  margin: 0;
+}
+
+/* Loading and error messages */
+.admin-dashboard-loading,
+.admin-dashboard-error {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.1rem;
+}
+
+.admin-dashboard-error {
+  color: #ff6b6b;
+}
+
+.admin-dashboard-nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.admin-dashboard-nav-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: #4fcfa5;
+  color: #232323;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.admin-dashboard-nav-btn:hover {
+  background: #38b2ac;
+  color: #fff;
+}
+
+/* Campaigns Section */
+.admin-campaigns-section {
+  margin-top: 60px;
+}
+
+.admin-campaigns-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.admin-campaigns-subtitle {
+  font-size: 1.1rem;
+  color: #bdbdbd;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.admin-campaigns-loading,
+.admin-campaigns-empty {
+  text-align: center;
+  padding: 40px;
+  font-size: 1.1rem;
+  color: #bdbdbd;
+}
+
+.admin-campaigns-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .admin-dashboard-container {
+    padding: 20px 15px;
+  }
+  
+  .admin-dashboard-title {
+    font-size: 2rem;
+  }
+  
+  .admin-dashboard-nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .admin-dashboard-stats {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .admin-campaigns-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard-title {
+    font-size: 1.8rem;
+  }
+  
+  .admin-dashboard-card {
+    padding: 20px;
+  }
+  
+  .admin-dashboard-card h2 {
+    font-size: 2rem;
+  }
+} 

@@ -1,0 +1,204 @@
+/* CampaignCard.css */
+
+/* Campaign cards */
+.campaign-card {
+  background: rgba(255,255,255,0.07);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  color: #fff;
+  border: 1px solid #333;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 0.2s ease;
+}
+
+.campaign-card:hover {
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.campaign-image-container {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+}
+
+.campaign-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.campaign-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.campaign-card:hover .campaign-overlay {
+  opacity: 1;
+}
+
+.view-icon {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.category-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  color: #7fff4f;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: rgba(127,255,79,0.08);
+  border: 1px solid #7fff4f;
+}
+
+.campaign-content {
+  padding: 25px;
+}
+
+.campaign-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.campaign-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #bdbdbd;
+}
+
+.meta-icon {
+  color: #4fcfa5;
+  font-size: 0.8rem;
+  min-width: 16px;
+}
+
+.campaign-progress {
+  margin-bottom: 20px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+
+.raised-amount {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.goal-amount {
+  font-size: 0.9rem;
+  color: #bdbdbd;
+}
+
+.progress-bar {
+  background: #858585;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress {
+  background: #7fff4f;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-percentage {
+  text-align: right;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #bdbdbd;
+}
+
+.campaign-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.view-campaign-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #7fff4f;
+  color: #232323;
+  border: 2px solid #7fff4f;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(127,255,79,0.15);
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.view-campaign-btn:hover {
+  background: #232323;
+  color: #7fff4f;
+  border: 2px solid #7fff4f;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .campaign-card {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .campaign-content {
+    padding: 20px;
+  }
+  
+  .campaign-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .campaign-image-container {
+    height: 180px;
+  }
+  
+  .campaign-content {
+    padding: 15px;
+  }
+} 

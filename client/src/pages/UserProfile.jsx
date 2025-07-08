@@ -6,8 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import './UserProfile.css';
 import axios from 'axios';
-import { FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaMapMarkerAlt, FaListAlt, FaEdit, FaDownload, FaHistory } from 'react-icons/fa';
-import EditCampaignModal from '../components/EditCampaignModal.jsx';
+import { FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaMapMarkerAlt, FaListAlt, FaEdit, FaDownload, FaHistory, FaStopCircle } from 'react-icons/fa';
 import WithdrawModal from '../components/WithdrawModal.jsx';
 import WithdrawalHistoryModal from '../components/WithdrawalHistoryModal.jsx';
 
@@ -62,6 +61,8 @@ const UserProfile = () => {
       
       setEditModalOpen(false);
       setEditingCampaign(null);
+      toast.success("✅ Campaign updated! Your changes will be visible after admin approval.");
+      setRefreshTrigger(prev => prev + 1); // Refresh to show updated status
     } catch (err) {
       console.error('❌ Update failed:', err);
       toast.error("❌ Failed to update campaign");
@@ -121,6 +122,17 @@ const UserProfile = () => {
         {c.endedAt && (
           <p><strong>Ended On:</strong> {new Date(c.endedAt).toLocaleDateString()}</p>
         )}
+        {/* Show approval status for current campaigns */}
+        {!isCompleted && (
+          <p className="campaign-approval-status">
+            Status: {c.rejected
+              ? <span className="disapproved-status">Disapproved</span>
+              : c.approved
+                ? <span className="approved-status">Approved</span>
+                : <span className="pending-status">Approval Pending</span>
+            }
+          </p>
+        )}
       </div>
       <div className="campaign-actions">
         <span className="campaign-status" style={isCompleted ? { backgroundColor: '#e8f5e9', color: '#2e7d32' } : {}}>
@@ -129,15 +141,23 @@ const UserProfile = () => {
             : '🟢 In Progress'
           }
         </span>
-        {!isCompleted && (
+        {/* End Campaign button for campaigns that are not ended */}
+        {!isCompleted && !c.ended && (
           <button
-            className="edit-btn"
-            onClick={() => {
-              setEditingCampaign(c);
-              setEditModalOpen(true);
+            className="end-campaign-btn"
+            style={{ marginLeft: 'auto' }}
+            onClick={async () => {
+              if (!window.confirm('Are you sure you want to end this campaign? This action cannot be undone.')) return;
+              try {
+                await axios.put(`http://localhost:5001/campaigns/${c._id}/end`);
+                toast.success('Campaign ended successfully!');
+                setRefreshTrigger(prev => prev + 1);
+              } catch (err) {
+                toast.error('Failed to end campaign');
+              }
             }}
           >
-            <FaEdit /> Edit
+            <FaStopCircle style={{ marginRight: 6, marginBottom: -2 }} /> End Campaign
           </button>
         )}
         {c.availableFunds > 0 && (
@@ -272,17 +292,6 @@ const UserProfile = () => {
           {renderContent()}
         </section>
       </main>
-
-      {editModalOpen && editingCampaign && (
-        <EditCampaignModal
-          campaign={editingCampaign}
-          setCampaign={setEditingCampaign}
-          onClose={() => setEditModalOpen(false)}
-          onSubmit={handleUpdate}
-          submitting={submitting}
-          setRefreshTrigger={setRefreshTrigger}
-        />
-      )}
 
       {withdrawModalOpen && selectedCampaign && (
         <WithdrawModal

@@ -6,9 +6,11 @@ const Campaign = require('../models/Campaign');
 const Donation = require('../models/Donation');
 const Withdrawal = require('../models/Withdrawal');
 const { upload } = require('../utils/cloudinary');
+const authMiddleware = require('../utils/authMiddleware'); // JWT authentication middleware
+const isAdmin = require('../utils/adminMiddleware'); // Admin role check middleware
 
 // ✅ POST /campaigns — Create a campaign with image + userId
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', authMiddleware, upload.single('image'), async (req, res) => {
   try {
     const { title, goal, location, category, description, userId } = req.body;
 
@@ -24,6 +26,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       description,
       imageUrl: req.file.path,
       userId,
+      approved: false, // Always set to false on creation
     });
 
     const saved = await newCampaign.save();
@@ -40,10 +43,11 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 });
 
-// ✅ GET /campaigns — fetch all campaigns
+// ✅ GET /campaigns — fetch all approved campaigns for the Campaign Section
 router.get('/', async (req, res) => {
   try {
-    const campaigns = await Campaign.find().sort({ createdAt: -1 });
+    // Only return approved campaigns
+    const campaigns = await Campaign.find({ approved: true }).sort({ createdAt: -1 });
     res.json(campaigns);
   } catch (err) {
     console.error('❌ Failed to fetch campaigns:', err.message);
@@ -54,7 +58,9 @@ router.get('/', async (req, res) => {
 // ✅ GET /campaigns/with-donations — Public enriched campaigns
 router.get('/with-donations', async (req, res) => {
   try {
+    // Only return approved and not ended campaigns
     const campaigns = await Campaign.find({
+      approved: true, // Only approved campaigns
       $or: [
         { ended: false },
         { ended: { $exists: false } }
@@ -123,21 +129,6 @@ router.get('/user/:userId', async (req, res) => {
   } catch (err) {
     console.error("❌ Failed to fetch user campaigns:", err);
     res.status(500).json({ message: "Failed to fetch campaigns by user" });
-  }
-});
-
-// ✅ PUT /campaigns/:id — update campaign info
-router.put('/:id', async (req, res) => {
-  try {
-    const { title, goal, description } = req.body;
-    const updated = await Campaign.findByIdAndUpdate(req.params.id, {
-      title,
-      goal,
-      description,
-    }, { new: true });
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ message: 'Update failed' });
   }
 });
 
@@ -287,6 +278,115 @@ router.get('/:id/withdrawals', async (req, res) => {
   } catch (err) {
     console.error('❌ Error fetching withdrawal history:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// ADMIN: List all unapproved and not rejected campaigns (NEW campaigns only)
+router.get('/admin/pending', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    // Only show campaigns that are not approved and not rejected
+    const pendingCampaigns = await Campaign.find({ 
+      approved: false, 
+      rejected: { $ne: true }
+    })
+      .sort({ createdAt: -1 })
+      .populate('userId', 'name');
+    res.json(pendingCampaigns);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch pending campaigns', error: err.message });
+  }
+});
+
+// ADMIN: List edited campaigns that need re-approval
+router.get('/admin/edited-pending', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    // Show edited campaigns that need re-approval
+    const editedPendingCampaigns = await Campaign.find({ 
+      approved: false, 
+      rejected: { $ne: true },
+      edited: true // Only edited campaigns
+    })
+      .sort({ lastEditedAt: -1 })
+      .populate('userId', 'name');
+    res.json(editedPendingCampaigns);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch edited pending campaigns', error: err.message });
+  }
+});
+
+// ADMIN: Approve a campaign
+router.put('/admin/approve/:id', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await Campaign.findByIdAndUpdate(id, { 
+      approved: true,
+      edited: false, // Reset edited flag when approved
+      lastEditedAt: null // Clear edit timestamp
+    }, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Campaign not found' });
+    res.json({ message: 'Campaign approved', campaign: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to approve campaign', error: err.message });
+  }
+});
+
+// ADMIN: Disapprove (reject) a campaign
+router.put('/admin/disapprove/:id', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await Campaign.findByIdAndUpdate(id, { rejected: true }, { new: true });
+    if (!updated) return res.status(404).json({ message: 'Campaign not found' });
+    res.json({ message: 'Campaign disapproved', campaign: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to disapprove campaign', error: err.message });
+  }
+});
+
+// ADMIN: Get all campaigns (approved and pending) for dashboard
+router.get('/admin/all', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const campaigns = await Campaign.find({ approved: true, ended: { $ne: true } })
+      .sort({ createdAt: -1 })
+      .populate('userId', 'name');
+
+    const donations = await Donation.aggregate([
+      { $group: { _id: "$campaignTitle", totalDonated: { $sum: "$amount" } } }
+    ]);
+
+    const enriched = campaigns.map(c => {
+      const match = donations.find(d => d._id === c.title);
+      const amount = match?.totalDonated || 0;
+      const progress = c.goal ? Math.min((amount / c.goal) * 100, 100) : 0;
+
+      return {
+        ...c.toObject(),
+        amount,
+        progress: Math.round(progress),
+        organizerName: c.userId?.name || 'Anonymous'
+      };
+    });
+
+    res.json(enriched);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch campaigns', error: err.message });
+  }
+});
+
+// ADMIN: Reject edit (remove from edited campaigns section)
+router.put('/admin/reject-edit/:id', authMiddleware, isAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Simply reset the edited flags to remove it from edited campaigns section
+    // Keep everything else unchanged
+    const updated = await Campaign.findByIdAndUpdate(id, {
+      edited: false,
+      lastEditedAt: null,
+    }, { new: true });
+    
+    res.json({ message: 'Edit rejected', campaign: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to reject edit', error: err.message });
   }
 });
 

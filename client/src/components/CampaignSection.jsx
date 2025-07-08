@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaSearch, FaMapMarkerAlt, FaUser, FaCalendarAlt, FaHeart, FaArrowRight } from 'react-icons/fa';
+import { FaSearch, FaHeart } from 'react-icons/fa';
+import CampaignCard from './CampaignCard';
 import './CampaignSection.css';
 
 const CampaignSection = () => {
@@ -38,25 +39,6 @@ const CampaignSection = () => {
 
   const handleCardClick = (campaign) => {
     navigate(`/campaign/${campaign._id}`);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      'Medical': '#ff6b6b',
-      'Education': '#4ecdc4',
-      'Disaster Relief': '#45b7d1',
-      'Animals': '#96ceb4',
-      'Other': '#feca57'
-    };
-    return colors[category] || '#4fcfa5';
   };
 
   return (
@@ -103,70 +85,14 @@ const CampaignSection = () => {
         </div>
       ) : (
         <div className="campaign-list">
-          {filteredCampaigns.map((c, index) => {
-            const percentage = c.progress || 0;
-            const categoryColor = getCategoryColor(c.category);
-            
-            return (
-              <div className="campaign-card" key={index} onClick={() => handleCardClick(c)}>
-                <div className="campaign-image-container">
-                  <img
-                    src={c.imageUrl || '/default-image.jpg'}
-                    alt={c.title}
-                    onError={(e) => (e.target.src = '/default-image.jpg')}
-                  />
-                  <div className="campaign-overlay">
-                    <FaArrowRight className="view-icon" />
-                  </div>
-                  <div className="category-badge" style={{ backgroundColor: categoryColor }}>
-                    {c.category}
-                  </div>
-                </div>
-                
-                <div className="campaign-content">
-                  <h3 className="campaign-title">{c.title}</h3>
-                  
-                  <div className="campaign-meta">
-                    <div className="meta-item">
-                      <FaUser className="meta-icon" />
-                      <span>{c.organizerName || 'Anonymous'}</span>
-                    </div>
-                    <div className="meta-item">
-                      <FaMapMarkerAlt className="meta-icon" />
-                      <span>{c.location || 'Location not specified'}</span>
-                    </div>
-                    <div className="meta-item">
-                      <FaCalendarAlt className="meta-icon" />
-                      <span>{formatDate(c.createdAt)}</span>
-                    </div>
-                  </div>
-
-                  <div className="campaign-progress">
-                    <div className="progress-info">
-                      <span className="raised-amount">${(c.amount || 0).toLocaleString()}</span>
-                      <span className="goal-amount">raised of ${(c.goal || 0).toLocaleString()}</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div 
-                        className="progress" 
-                        style={{ width: percentage === 0 ? '2px' : `${percentage}%`, backgroundColor: categoryColor, minWidth: '2px' }}
-                      ></div>
-                    </div>
-                    <div className="progress-percentage">
-                      <span>{percentage}%</span>
-                    </div>
-                  </div>
-
-                  <div className="campaign-actions">
-                    <button className="view-campaign-btn">
-                      View Campaign
-                      <FaArrowRight />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredCampaigns.map((campaign, index) => (
+            <CampaignCard
+              key={campaign._id || index}
+              campaign={campaign}
+              onClick={handleCardClick}
+              showActions={true}
+            />
+          ))}
         </div>
       )}
     </section>

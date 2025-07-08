@@ -1,5 +1,6 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState } from 'react';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -28,6 +29,25 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('user');
   };
+
+  // Global axios interceptor for auto-logout on user deletion or unauthorized
+  React.useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (
+          error.response &&
+          error.response.status === 401 &&
+          (error.response.data.message === 'User not found' || error.response.data.message === 'Unauthorized')
+        ) {
+          logout();
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+    );
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loggedIn }}>

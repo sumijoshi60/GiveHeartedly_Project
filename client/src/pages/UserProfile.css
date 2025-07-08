@@ -7,7 +7,7 @@
   
   .profile-sidebar {
     width: 220px;
-    background: #181818;
+    background: #3d3c3c;
     color: #fff;
     padding: 36px 18px;
     border-right: 1px solid #23272f;
@@ -283,6 +283,48 @@
     .donation-card {
       padding: 8px 4px;
     }
+  }
+  
+  /* Approval status styles for campaigns */
+  .approved-status {
+    color: green;
+    font-weight: bold;
+  }
+  .pending-status {
+    color: orange;
+    font-weight: bold;
+  }
+  .campaign-approval-status {
+    margin-top: 0.5rem;
+    font-size: 1.05rem;
+  }
+  
+  .disapproved-status {
+    color: #d32f2f;
+    font-weight: bold;
+  }
+
+  .end-campaign-btn {
+    background-color: #fff;
+    color: #e74c3c;
+    border: 2px solid #e74c3c;
+    border-radius: 5px;
+    padding: 8px 14px;
+    font-size: 0.98rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-left: auto;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    box-shadow: none;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  }
+
+  .end-campaign-btn:hover {
+    background-color: #e74c3c;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.10);
   }
   
   

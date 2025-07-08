@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './CampaignDetails.css';
 
 const CampaignDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [campaign, setCampaign] = useState(null);
   const [loading, setLoading] = useState(true);
   const [donationAmount, setDonationAmount] = useState('');
@@ -34,6 +35,18 @@ const CampaignDetails = () => {
     }
 
     try {
+      // ✅ First verify if user still exists (prevents deleted/banned users from donating)
+      const verifyRes = await fetch(`http://localhost:5001/users/verify/${userId}`);
+      const verifyData = await verifyRes.json();
+      
+      if (!verifyData.exists) {
+        alert('Your account has been deleted or banned. You cannot make donations.');
+        // Clear local storage and redirect to login
+        localStorage.clear();
+        window.location.href = '/login';
+        return;
+      }
+
       const res = await fetch('http://localhost:5001/stripe/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,20 +70,26 @@ const CampaignDetails = () => {
     }
   };
 
+  const LogoButton = () => (
+    <button
+      onClick={() => navigate(-1)}
+      className="home-logo-link"
+      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+    >
+      <img src="/logo.png" alt="Home" className="home-logo" />
+    </button>
+  );
+
   if (loading) return (
     <div className="loading-container">
-      <Link to="/" className="home-logo-link">
-        <img src="/logo.png" alt="Home" className="home-logo" />
-      </Link>
+      <LogoButton />
       <p>Loading campaign...</p>
     </div>
   );
   
   if (!campaign) return (
     <div className="not-found-container">
-      <Link to="/" className="home-logo-link">
-        <img src="/logo.png" alt="Home" className="home-logo" />
-      </Link>
+      <LogoButton />
       <p>Campaign not found.</p>
     </div>
   );
@@ -83,9 +102,7 @@ const CampaignDetails = () => {
   return (
     <div className="campaign-details-layout">
       <div className="fixed-logo-wrapper">
-        <Link to="/" className="home-logo-link">
-          <img src="/logo.png" alt="Home" className="home-logo" />
-        </Link>
+        <LogoButton />
       </div>
       <div className="campaign-page-container">
         <div className="campaign-detail-wrapper">

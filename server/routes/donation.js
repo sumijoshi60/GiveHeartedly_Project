@@ -7,6 +7,7 @@ const { generateReceiptPDF } = require('../utils/pdfReceipt');
 const path = require('path');
 const fs = require('fs');
 const { sendThankYouEmail } = require('../utils/mailer');
+const User = require('../models/user');
 console.log("🧪 sendThankYouEmail type:", typeof sendThankYouEmail);
 
 
@@ -22,6 +23,16 @@ router.post('/save-donation', async (req, res) => {
 
     if (!session.metadata?.userId) {
       throw new Error("userId missing in session metadata");
+    }
+
+    // ✅ Check if user still exists (prevents deleted/banned users from donating)
+    const user = await User.findById(session.metadata.userId);
+    if (!user) {
+      console.log("❌ User not found, donation blocked for userId:", session.metadata.userId);
+      return res.status(403).json({ 
+        error: 'User account not found. You may have been banned or your account deleted.',
+        message: 'Donation blocked - user account not found'
+      });
     }
 
     const result = await Donation.findOneAndUpdate(
@@ -49,6 +60,10 @@ router.post('/save-donation', async (req, res) => {
     }
 
     // ✅ Send email with PDF
+    // Fetch donor name from User model (user already fetched above)
+    let donorName = 'N/A';
+    if (user && user.name) donorName = user.name;
+
     const donationData = {
       email: session.customer_email || session.customer_details?.email || 'default@example.com',
       campaignTitle: session.metadata.campaignTitle,
@@ -56,6 +71,7 @@ router.post('/save-donation', async (req, res) => {
       currency: session.currency,
       date: new Date(),
       sessionId: session.id,
+      name: donorName,
     };
 
     const pdfPath = path.join(__dirname, '..', 'temp', `${session.id}.pdf`);

@@ -1,0 +1,86 @@
+/* AdminUserList.css */
+
+/* Main container for the user list page */
+.admin-userlist-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Title */
+.admin-userlist-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Search box */
+.admin-userlist-search {
+  display: block;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto 1.5rem auto;
+  padding: 0.7rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Table styles */
+.admin-userlist-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  border-radius: 10px;
+  overflow: hidden;
+  color: #1f2e50;
+}
+
+.admin-userlist-table th,
+.admin-userlist-table td {
+  padding: 1rem;
+  text-align: left;
+}
+
+.admin-userlist-table th {
+  background: #f5f5f5;
+  font-weight: bold;
+  color: #2d7ff9;
+}
+
+.admin-userlist-table tr:nth-child(even) {
+  background: #fafbfc;
+}
+
+.admin-userlist-table tr:hover {
+  background: #eaf3ff;
+}
+
+/* Loading and error messages */
+.admin-userlist-loading,
+.admin-userlist-error {
+  margin-top: 2rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.admin-userlist-error {
+  color: red;
+}
+
+.admin-userlist-ban-btn {
+  padding: 0.4rem 1rem;
+  background: #ff4d4f;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.98rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.admin-userlist-ban-btn:hover {
+  background: #b71c1c;
+} 

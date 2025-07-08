@@ -38,8 +38,16 @@ const Login = () => {
 
       localStorage.setItem('userId', userId);
       localStorage.setItem('email', data.user.email);
+      localStorage.setItem('token', data.token); // Store JWT token for authenticated requests
       login(data.user); // ✅ Update auth context
-      navigate('/');
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        // If the user is an admin, navigate to the admin dashboard
+        navigate('/admin');
+      } else {
+        // Otherwise, navigate to the normal homepage
+        navigate('/');
+      }
     } catch (err) {
       console.error('Login error:', err);
       setError('Network error. Please try again later.');

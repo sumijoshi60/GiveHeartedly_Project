@@ -47,6 +47,12 @@ const CreateCampaign = () => {
       return;
     }
 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in to create a campaign.");
+      return;
+    }
+
     const formDataToSend = new FormData();
     formDataToSend.append('title', formData.title);
     formDataToSend.append('goal', formData.goal);
@@ -59,6 +65,9 @@ const CreateCampaign = () => {
     try {
       const response = await fetch('http://localhost:5001/campaigns', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formDataToSend,
       });
 
